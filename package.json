@@ -1,0 +1,10 @@
+{
+  "name": "ai-chatbot-workspace",
+  "version": "1.0.0",
+  "description": "Workspace root for Trinity AI Chatbot",
+  "scripts": {
+    "watch-git": "node git-sync-watcher.js",
+    "dev:client": "npm run dev --prefix client",
+    "dev:server": "node server/index.js"
+  }
+}
