@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="64" height="64" fill="none">
+  <defs>
+    <filter id="glow-blue-sm" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="glow-purple-sm" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="glow-cyan-sm" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <filter id="glow-center-sm" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+  </defs>
+  <ellipse cx="100" cy="100" rx="68" ry="22" fill="none" stroke="#4F9DFF" strokeWidth="6" filter="url(#glow-blue-sm)" />
+  <g transform="rotate(90, 100, 100)">
+    <ellipse cx="100" cy="100" rx="68" ry="22" fill="none" stroke="#A78BFA" strokeWidth="6" filter="url(#glow-purple-sm)" />
+  </g>
+  <g transform="rotate(45, 100, 100)">
+    <ellipse cx="100" cy="100" rx="68" ry="22" fill="none" stroke="#67E8F9" strokeWidth="6" filter="url(#glow-cyan-sm)" />
+  </g>
+  <circle cx="100" cy="100" r="14" fill="white" filter="url(#glow-center-sm)" />
+  <circle cx="100" cy="100" r="7" fill="white" opacity="0.95" />
+</svg>
