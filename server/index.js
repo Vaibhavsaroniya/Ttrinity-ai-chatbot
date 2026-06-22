@@ -66,6 +66,10 @@ app.post("/chat", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("Trinity backend running on http://localhost:5000");
-});
+if (!process.env.VERCEL) {
+  app.listen(5000, () => {
+    console.log("Trinity backend running on http://localhost:5000");
+  });
+}
+
+module.exports = app;

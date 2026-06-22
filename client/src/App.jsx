@@ -650,7 +650,8 @@ function App() {
     setIsLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:5000/chat", {
+      const apiURL = import.meta.env.DEV ? "http://localhost:5000/chat" : "/chat";
+      const res = await axios.post(apiURL, {
         message: userText,
         history: currentMessages,
       });
