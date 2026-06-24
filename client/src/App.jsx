@@ -388,8 +388,12 @@ function App() {
       try {
         const parsed = JSON.parse(storedHistory);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setHistory(parsed);
-          setActiveChatId(parsed[0].id);
+          const sanitized = parsed.map((chat) => ({
+            ...chat,
+            messages: Array.isArray(chat.messages) ? chat.messages : [],
+          }));
+          setHistory(sanitized);
+          setActiveChatId(sanitized[0].id);
         } else {
           setHistory(MOCK_HISTORY);
           setActiveChatId("welcome-email");
@@ -430,6 +434,7 @@ function App() {
   }, [isLoading, view]);
 
   const activeChat = history.find((h) => h.id === activeChatId) || { messages: [] };
+  const activeMessages = activeChat.messages || [];
 
   const createNewChat = useCallback(
     (skipCheck = false) => {
@@ -492,7 +497,7 @@ function App() {
     setMessage("");
 
     const userMsgId = `${Date.now()}-user`;
-    const currentMessages = activeChat.messages;
+    const currentMessages = activeChat.messages || [];
 
     setHistory((prev) =>
       prev.map((chat) => {
@@ -722,8 +727,8 @@ function App() {
               <div className="header-title">{activeChat.title || "Welcome"}</div>
               <div className="header-subtitle">
                 <span>
-                  {activeChat.messages ? activeChat.messages.length : 0}{" "}
-                  {activeChat.messages && activeChat.messages.length === 1
+                  {activeMessages.length}{" "}
+                  {activeMessages.length === 1
                     ? "message"
                     : "messages"}
                 </span>
@@ -746,7 +751,7 @@ function App() {
         </header>
 
         <div className="chat-messages">
-          {activeChat.messages.length === 0 ? (
+          {activeMessages.length === 0 ? (
             <div className="welcome-screen">
               <div className="large-welcome-logo-container" style={{ height: "auto" }}>
                 <TLogo size={60} />
@@ -759,7 +764,7 @@ function App() {
               </div>
             </div>
           ) : (
-            activeChat.messages.map((msg, i) => {
+            activeMessages.map((msg, i) => {
               const isRevealed = revealedIds.has(msg.id);
               const isStreamingNow = streamingId === msg.id;
 
