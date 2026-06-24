@@ -251,7 +251,7 @@ function TypingIndicator() {
   return (
     <div className="message-wrapper ai animate-msg-ai">
       <div className="message-avatar">
-        <TrinityLogo size="small" />
+        <TLogo size={24} />
       </div>
       <div className="message-col">
         <div className="typing-bubble">
