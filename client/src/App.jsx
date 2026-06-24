@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import {
-  Send,
   Plus,
   Trash2,
   Menu,
@@ -12,336 +11,107 @@ import {
   AlertTriangle,
   MessageSquare,
   X,
+  Paperclip,
+  LayoutGrid,
+  Share2,
+  MoreHorizontal,
+  ArrowUp,
 } from "lucide-react";
+import LandingPage from "./LandingPage";
 import "./App.css";
 
-// Trinity AI Logo Component
-function TrinityLogo({ size = "small" }) {
-  if (size === "large") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "44px" }}>
-        <style>{`
-          @keyframes draw-ring {
-            from { stroke-dashoffset: 620; opacity: 0; }
-            to   { stroke-dashoffset: 0;   opacity: 0.75; }
-          }
-          @keyframes dot-appear {
-            from { opacity: 0; }
-            to   { opacity: 1; }
-          }
-          @keyframes center-pulse {
-            0%,100% { opacity: 0.9; r: 5; }
-            50%      { opacity: 0.4; r: 9; }
-          }
-          @keyframes halo-breathe {
-            0%,100% { opacity: 0.35; }
-            50%      { opacity: 0.7; }
-          }
-          @keyframes mark-float {
-            0%,100% { transform: translateY(0px); }
-            50%      { transform: translateY(-8px); }
-          }
-          @keyframes text-rise {
-            from { opacity: 0; transform: translateY(18px); }
-            to   { opacity: 1; transform: translateY(0px); }
-          }
-          @keyframes badge-shimmer {
-            0%   { background-position: -200% center; }
-            100% { background-position: 200% center; }
-          }
+// Simple brand logo: Green circle with white T
+export function TLogo({ size = 24 }) {
+  return (
+    <div
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: "50%",
+        backgroundColor: "#0b332c",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#ffffff",
+        fontWeight: "bold",
+        fontSize: `${size * 0.5}px`,
+        fontFamily: "var(--font-sans)",
+        userSelect: "none",
+        flexShrink: 0,
+      }}
+      className="t-brand-logo"
+    >
+      T
+    </div>
+  );
+}
 
-          .ring-1 {
-            stroke-dasharray: 620;
-            animation: draw-ring 2s cubic-bezier(0.4,0,0.2,1) 0.2s both;
-          }
-          .ring-2 {
-            stroke-dasharray: 620;
-            animation: draw-ring 2s cubic-bezier(0.4,0,0.2,1) 0.55s both;
-          }
-          .ring-3 {
-            stroke-dasharray: 620;
-            animation: draw-ring 2s cubic-bezier(0.4,0,0.2,1) 0.9s both;
-          }
+// User Avatar component for Sarah Chen
+export function UserAvatar({ size = 28 }) {
+  return (
+    <div className="user-avatar-wrapper" style={{ width: size, height: size, flexShrink: 0 }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        style={{ borderRadius: "50%" }}
+      >
+        <circle cx="50" cy="50" r="50" fill="#dfdad2" />
+        {/* Hair back */}
+        <path d="M 30,55 C 30,25 70,25 70,55 C 70,60 70,70 70,70 L 30,70 Z" fill="#9ba29f" />
+        {/* Head */}
+        <circle cx="50" cy="45" r="20" fill="#f5ece1" />
+        {/* Hair front/bangs */}
+        <path d="M 32,40 C 35,28 65,28 68,40 C 68,40 55,30 50,38 C 45,30 32,40 32,40 Z" fill="#b8c0bd" />
+        {/* Neck */}
+        <path d="M 45,60 L 55,60 L 55,68 L 45,68 Z" fill="#ebdcd0" />
+        {/* Shoulders/Clothes */}
+        <path d="M 22,85 C 22,70 35,68 50,68 C 65,68 78,70 78,85 L 22,85 Z" fill="#0b332c" />
+      </svg>
+    </div>
+  );
+}
 
-          .dot-1 { animation: dot-appear 0.4s ease 2.2s both; }
-          .dot-2 { animation: dot-appear 0.4s ease 2.5s both; }
-          .dot-3 { animation: dot-appear 0.4s ease 2.8s both; }
+// Split AI message into conversational parts and draft/block parts
+export function parseMessageParts(text) {
+  if (!text) return [];
 
-          .center-dot {
-            animation: center-pulse 2.8s ease-in-out 3s infinite;
-          }
-          .halo {
-            animation: halo-breathe 3s ease-in-out infinite;
-          }
-          .mark-float {
-            animation: mark-float 5s ease-in-out 3s infinite;
-            will-change: transform;
-          }
+  // Check for Subject line draft pattern
+  const subjectIndex = text.indexOf("Subject:");
+  if (subjectIndex !== -1) {
+    const intro = text.substring(0, subjectIndex).trim();
+    const draft = text.substring(subjectIndex).trim();
 
-          .wordmark {
-            font-family: 'Space Grotesk', sans-serif;
-            animation: text-rise 0.9s cubic-bezier(0.16,1,0.3,1) 1.8s both;
-          }
-          .tagline {
-            font-family: 'Space Grotesk', sans-serif;
-            animation: text-rise 0.9s cubic-bezier(0.16,1,0.3,1) 2.1s both;
-          }
-
-          .ai-badge {
-            background: linear-gradient(
-              90deg,
-              #4F9DFF 0%,
-              #A78BFA 40%,
-              #67E8F9 70%,
-              #4F9DFF 100%
-            );
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: badge-shimmer 4s linear 3s infinite;
-          }
-        `}</style>
-        {/* ── Mark ── */}
-        <div className="mark-float" style={{ lineHeight: 0 }}>
-          <svg
-            viewBox="0 0 200 200"
-            width="260"
-            height="260"
-            style={{ overflow: "visible" }}
-          >
-            <defs>
-              {/* Glow filters */}
-              <filter id="glow-blue" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
-                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-              <filter id="glow-purple" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
-                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-              <filter id="glow-cyan" x="-60%" y="-60%" width="220%" height="220%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
-                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-              <filter id="glow-center" x="-150%" y="-150%" width="400%" height="400%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b" />
-                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-
-              {/* Ambient halo gradient */}
-              <radialGradient id="halo-grad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%"   stopColor="#3D1FA8" stopOpacity="0.35" />
-                <stop offset="60%"  stopColor="#1A0D5C" stopOpacity="0.15" />
-                <stop offset="100%" stopColor="#07071A" stopOpacity="0" />
-              </radialGradient>
-
-              {/* Motion paths */}
-              <path
-                id="orbit-path"
-                d="M 32,100 A 68,22 0 1,1 168,100 A 68,22 0 1,1 32,100"
-                fill="none"
-              />
-            </defs>
-
-            {/* Ambient halo */}
-            <circle className="halo" cx="100" cy="100" r="96" fill="url(#halo-grad)" />
-
-            {/* ── Ring 1: horizontal (0°) – blue ── */}
-            <ellipse
-              className="ring-1"
-              cx="100" cy="100" rx="68" ry="22"
-              fill="none"
-              stroke="#4F9DFF"
-              strokeWidth="1.4"
-              filter="url(#glow-blue)"
-            />
-
-            {/* ── Ring 2: vertical (90°) – purple ── */}
-            <g transform="rotate(90, 100, 100)">
-              <ellipse
-                className="ring-2"
-                cx="100" cy="100" rx="68" ry="22"
-                fill="none"
-                stroke="#A78BFA"
-                strokeWidth="1.4"
-                filter="url(#glow-purple)"
-              />
-            </g>
-
-            {/* ── Ring 3: diagonal (45°) – cyan ── */}
-            <g transform="rotate(45, 100, 100)">
-              <ellipse
-                className="ring-3"
-                cx="100" cy="100" rx="68" ry="22"
-                fill="none"
-                stroke="#67E8F9"
-                strokeWidth="1.4"
-                filter="url(#glow-cyan)"
-              />
-            </g>
-
-            {/* ── Orbiting dot – ring 1 (blue) ── */}
-            <g className="dot-1">
-              <circle r="3.8" fill="#4F9DFF" filter="url(#glow-blue)">
-                <animateMotion dur="7s" repeatCount="indefinite" begin="2.2s">
-                  <mpath href="#orbit-path" />
-                </animateMotion>
-              </circle>
-            </g>
-
-            {/* ── Orbiting dot – ring 2 (purple, rotated 90°) ── */}
-            <g className="dot-2" transform="rotate(90, 100, 100)">
-              <circle r="3.8" fill="#A78BFA" filter="url(#glow-purple)">
-                <animateMotion dur="10s" repeatCount="indefinite" begin="2.5s">
-                  <mpath href="#orbit-path" />
-                </animateMotion>
-              </circle>
-            </g>
-
-            {/* ── Orbiting dot – ring 3 (cyan, rotated 45°) ── */}
-            <g className="dot-3" transform="rotate(45, 100, 100)">
-              <circle r="3.8" fill="#67E8F9" filter="url(#glow-cyan)">
-                <animateMotion dur="8.5s" repeatCount="indefinite" begin="2.8s">
-                  <mpath href="#orbit-path" />
-                </animateMotion>
-              </circle>
-            </g>
-
-            {/* ── Center core ── */}
-            <circle
-              className="center-dot"
-              cx="100" cy="100" r="5"
-              fill="white"
-              filter="url(#glow-center)"
-            />
-            {/* Hard center pinpoint */}
-            <circle cx="100" cy="100" r="2.5" fill="white" opacity="0.95" />
-          </svg>
-        </div>
-
-        {/* ── Wordmark ── */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
-          <div
-            className="wordmark"
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: "10px",
-            }}
-          >
-            <span
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "46px",
-                fontWeight: 700,
-                letterSpacing: "0.14em",
-                color: "var(--text-primary)",
-                lineHeight: 1,
-              }}
-            >
-              TRINITY
-            </span>
-            <span
-              className="ai-badge"
-              style={{
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontSize: "20px",
-                fontWeight: 600,
-                letterSpacing: "0.3em",
-                lineHeight: 1,
-              }}
-            >
-              AI
-            </span>
-          </div>
-
-          <p
-            className="tagline"
-            style={{
-              fontFamily: "'Space Grotesk', sans-serif",
-              fontSize: "11px",
-              fontWeight: 400,
-              letterSpacing: "0.38em",
-              color: "var(--text-secondary)",
-              textTransform: "uppercase",
-              margin: 0,
-            }}
-          >
-            Intelligence &middot; Redefined
-          </p>
-        </div>
-      </div>
-    );
+    const parts = [];
+    if (intro) {
+      parts.push({ type: "conversational", text: intro });
+    }
+    if (draft) {
+      parts.push({ type: "draft", text: draft });
+    }
+    return parts;
   }
 
-  // Small compact version for avatars / sidebar
-  return (
-    <svg
-      viewBox="0 0 200 200"
-      className={size === "sidebar" ? "brand-logo-svg" : "message-avatar-svg"}
-      style={{ overflow: "visible" }}
-    >
-      <defs>
-        {/* Simple filters */}
-        <filter id="glow-blue-sm" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-        <filter id="glow-purple-sm" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-        <filter id="glow-cyan-sm" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-        <filter id="glow-center-sm" x="-100%" y="-100%" width="300%" height="300%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
+  // Check for standard code block pattern
+  if (text.includes("```")) {
+    const regex = /(```[\s\S]*?```)/g;
+    const tokens = text.split(regex);
+    return tokens
+      .map((token) => {
+        if (token.startsWith("```")) {
+          const match = token.match(/```(\w*)\n?([\s\S]*?)```/);
+          return {
+            type: "draft",
+            text: match ? match[2].trim() : token.replace(/```/g, "").trim(),
+            language: match ? match[1] : "",
+          };
+        }
+        return { type: "conversational", text: token.trim() };
+      })
+      .filter((p) => p.text);
+  }
 
-      {/* Ring 1 */}
-      <ellipse
-        cx="100" cy="100" rx="68" ry="22"
-        fill="none"
-        stroke="#4F9DFF"
-        strokeWidth="6"
-        filter="url(#glow-blue-sm)"
-      />
-
-      {/* Ring 2 */}
-      <g transform="rotate(90, 100, 100)">
-        <ellipse
-          cx="100" cy="100" rx="68" ry="22"
-          fill="none"
-          stroke="#A78BFA"
-          strokeWidth="6"
-          filter="url(#glow-purple-sm)"
-        />
-      </g>
-
-      {/* Ring 3 */}
-      <g transform="rotate(45, 100, 100)">
-        <ellipse
-          cx="100" cy="100" rx="68" ry="22"
-          fill="none"
-          stroke="#67E8F9"
-          strokeWidth="6"
-          filter="url(#glow-cyan-sm)"
-        />
-      </g>
-
-      {/* Center core */}
-      <circle
-        cx="100" cy="100" r="14"
-        fill="white"
-        filter="url(#glow-center-sm)"
-      />
-      <circle cx="100" cy="100" r="7" fill="white" opacity="0.95" />
-    </svg>
-  );
+  return [{ type: "conversational", text }];
 }
 
 function CodeBlock({ code, language }) {
@@ -506,12 +276,99 @@ function getTime() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+const MOCK_HISTORY = [
+  {
+    id: "welcome-email",
+    title: "Welcome email draft",
+    date: "Today",
+    messages: [
+      {
+        id: "msg-1",
+        role: "user",
+        text: "Can you help me write a welcome email for new users?",
+        time: "2m ago",
+      },
+      {
+        id: "msg-2",
+        role: "ai",
+        text: "Of course! Here's a warm, concise draft that feels personal without being overwhelming.\n\nSubject: Welcome — we're glad you're here\n\nHi [Name], thanks for joining us. You're now part of something we've been building with a lot of care. Explore at your own pace, and reach out anytime.",
+        time: "2m ago",
+      },
+      { id: "msg-3", role: "user", text: "Make it a bit shorter, please.", time: "2m ago" },
+      {
+        id: "msg-4",
+        role: "ai",
+        text: "Done. Here's the trimmed version — three punchy lines, still warm, much tighter.\n\nSubject: Welcome\n\nHi [Name] — glad you're here. Take a look around, and we're always just a message away.",
+        time: "2m ago",
+      },
+    ],
+  },
+  {
+    id: "prod-desc",
+    title: "Product description",
+    date: "Today",
+    messages: [
+      {
+        id: "msg-5",
+        role: "user",
+        text: "Help me write a product description for a mechanical keyboard.",
+        time: "1h ago",
+      },
+      {
+        id: "msg-6",
+        role: "ai",
+        text: "Sounds great, can you add some specific features or key material details?",
+        time: "1h ago",
+      },
+    ],
+  },
+  {
+    id: "blog-outline",
+    title: "Blog post outline",
+    date: "Yesterday",
+    messages: [
+      {
+        id: "msg-7",
+        role: "user",
+        text: "Draft a blog post outline on minimalist productivity workspaces.",
+        time: "Yesterday",
+      },
+      {
+        id: "msg-8",
+        role: "ai",
+        text: "What about SEO keywords? Should I generate them based on this outline?",
+        time: "Yesterday",
+      },
+    ],
+  },
+  {
+    id: "support-faq",
+    title: "Support FAQ copy",
+    date: "Monday",
+    messages: [
+      {
+        id: "msg-9",
+        role: "user",
+        text: "Can we draft an FAQ response for shipping refunds?",
+        time: "Mon",
+      },
+      {
+        id: "msg-10",
+        role: "ai",
+        text: "Can we add a refund section? Here are the standard draft points for shipping...",
+        time: "Mon",
+      },
+    ],
+  },
+];
+
 function App() {
+  const [view, setView] = useState("landing"); // 'landing' or 'chat'
   const [message, setMessage] = useState("");
   const [activeChatId, setActiveChatId] = useState(null);
   const [history, setHistory] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light"); // default to light as per mockups
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [streamingId, setStreamingId] = useState(null);
@@ -522,7 +379,7 @@ function App() {
 
   useEffect(() => {
     const storedHistory = localStorage.getItem("trinity_history");
-    const storedTheme = localStorage.getItem("trinity_theme") || "dark";
+    const storedTheme = localStorage.getItem("trinity_theme") || "light";
 
     setTheme(storedTheme);
     document.documentElement.setAttribute("data-theme", storedTheme);
@@ -530,20 +387,22 @@ function App() {
     if (storedHistory) {
       try {
         const parsed = JSON.parse(storedHistory);
-        setHistory(Array.isArray(parsed) ? parsed : []);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          setHistory(parsed);
           setActiveChatId(parsed[0].id);
         } else {
-          createNewChat(true);
+          setHistory(MOCK_HISTORY);
+          setActiveChatId("welcome-email");
         }
       } catch (e) {
         console.error("Error parsing stored history:", e);
-        createNewChat(true);
+        setHistory(MOCK_HISTORY);
+        setActiveChatId("welcome-email");
       }
     } else {
-      createNewChat(true);
+      setHistory(MOCK_HISTORY);
+      setActiveChatId("welcome-email");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -565,10 +424,10 @@ function App() {
   }, [message]);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && view === "chat") {
       textareaRef.current?.focus();
     }
-  }, [isLoading]);
+  }, [isLoading, view]);
 
   const activeChat = history.find((h) => h.id === activeChatId) || { messages: [] };
 
@@ -607,7 +466,12 @@ function App() {
   const clearAllChats = () => {
     if (!window.confirm("Delete all conversations? This cannot be undone.")) return;
     const id = Date.now().toString();
-    const fresh = { id, title: "New Conversation", messages: [], date: new Date().toLocaleDateString() };
+    const fresh = {
+      id,
+      title: "New Conversation",
+      messages: [],
+      date: new Date().toLocaleDateString(),
+    };
     setHistory([fresh]);
     setActiveChatId(id);
     localStorage.removeItem("trinity_history");
@@ -642,7 +506,10 @@ function App() {
         return {
           ...chat,
           title,
-          messages: [...chat.messages, { id: userMsgId, role: "user", text: userText, time: getTime() }],
+          messages: [
+            ...chat.messages,
+            { id: userMsgId, role: "user", text: userText, time: getTime() },
+          ],
         };
       })
     );
@@ -662,7 +529,10 @@ function App() {
           if (chat.id !== activeChatId) return chat;
           return {
             ...chat,
-            messages: [...chat.messages, { id: aiMsgId, role: "ai", text: res.data.reply, time: getTime() }],
+            messages: [
+              ...chat.messages,
+              { id: aiMsgId, role: "ai", text: res.data.reply, time: getTime() },
+            ],
           };
         })
       );
@@ -670,7 +540,9 @@ function App() {
       setStreamingId(aiMsgId);
     } catch (err) {
       const errId = `${Date.now()}-err`;
-      const backendError = err.response?.data?.reply || "Could not reach the Trinity backend. Make sure the server is running.";
+      const backendError =
+        err.response?.data?.reply ||
+        "Could not reach the Trinity backend. Make sure the server is running.";
       setError(backendError);
       setHistory((prev) =>
         prev.map((chat) => {
@@ -712,21 +584,41 @@ function App() {
     setStreamingId(null);
   };
 
+  // If view is 'landing', show the landing page
+  if (view === "landing") {
+    return (
+      <LandingPage
+        onStartChat={() => setView("chat")}
+        onThemeToggle={toggleTheme}
+        theme={theme}
+      />
+    );
+  }
+
   return (
     <div className="app-container">
       {isSidebarOpen && (
         <div className="sidebar-overlay visible" onClick={() => setIsSidebarOpen(false)} />
       )}
 
+      {/* ── Sidebar ── */}
       <aside className={`sidebar ${isSidebarOpen ? "" : "closed"}`}>
         <div className="sidebar-brand">
-          <div className="brand-logo">
-            <TrinityLogo size="sidebar" />
-            <div className="brand-name">Trinity</div>
+          <div
+            className="brand-logo"
+            onClick={() => setView("landing")}
+            style={{ cursor: "pointer" }}
+          >
+            <TLogo size={24} />
+            <div className="brand-name">Trinity AI</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <span className="brand-badge">Beta</span>
-            <button className="sidebar-close-btn" onClick={() => setIsSidebarOpen(false)} title="Close sidebar">
+            <button
+              className="sidebar-close-btn"
+              onClick={() => setIsSidebarOpen(false)}
+              title="Close sidebar"
+            >
               <X size={15} />
             </button>
           </div>
@@ -735,72 +627,120 @@ function App() {
         <div className="new-chat-area">
           <button className="new-chat-btn" onClick={() => createNewChat()}>
             <Plus size={14} />
-            <span>New Conversation</span>
+            <span>New conversation</span>
           </button>
         </div>
 
         <div className="history-label">Recent</div>
         <div className="sidebar-history">
           {history.length === 0 ? (
-            <div style={{ padding: "1rem", color: "var(--text-muted)", fontSize: "0.78rem", textAlign: "center" }}>
+            <div
+              style={{
+                padding: "1rem",
+                color: "var(--text-muted)",
+                fontSize: "0.78rem",
+                textAlign: "center",
+              }}
+            >
               No conversations yet
             </div>
           ) : (
-            history.map((chat) => (
-              <div
-                key={chat.id}
-                className={`history-item ${chat.id === activeChatId ? "active" : ""}`}
-                onClick={() => setActiveChatId(chat.id)}
-              >
-                <div className="history-item-content">
-                  <MessageSquare size={12} style={{ flexShrink: 0, opacity: 0.6 }} />
-                  <span className="history-item-text">{chat.title}</span>
+            history.map((chat) => {
+              const isActive = chat.id === activeChatId;
+              const lastMsg = chat.messages[chat.messages.length - 1];
+              // Get message preview, clean of code blocks formatting
+              const previewRaw = lastMsg ? lastMsg.text : "";
+              const subjectIdx = previewRaw.indexOf("Subject:");
+              const previewClean =
+                subjectIdx !== -1 ? previewRaw.substring(0, subjectIdx).trim() : previewRaw;
+              const previewText = previewClean
+                ? previewClean.length > 25
+                  ? previewClean.substring(0, 25) + "..."
+                  : previewClean
+                : "No messages yet";
+
+              // Find appropriate timestamp display
+              const timeText = lastMsg ? lastMsg.time || "Just now" : "";
+
+              return (
+                <div
+                  key={chat.id}
+                  className={`history-item ${isActive ? "active" : ""}`}
+                  onClick={() => setActiveChatId(chat.id)}
+                >
+                  <div className="history-item-content-wrapper">
+                    <div className="history-item-title-row">
+                      <span className="history-item-title">{chat.title}</span>
+                      {timeText && <span className="history-item-time">{timeText}</span>}
+                    </div>
+                    <span className="history-item-preview">{previewText}</span>
+                  </div>
+                  <div className="history-item-actions">
+                    <button
+                      className="delete-history-btn"
+                      onClick={(e) => deleteChat(chat.id, e)}
+                      title="Delete"
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                  {chat.messages.length > 0 && (
-                    <span className="history-msg-count">{chat.messages.length}</span>
-                  )}
-                  <button className="delete-history-btn" onClick={(e) => deleteChat(chat.id, e)} title="Delete">
-                    <Trash2 size={11} />
-                  </button>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
-        <div className="sidebar-footer">
-          <button className="clear-all-btn" onClick={clearAllChats}>
-            <Trash2 size={12} />
-            <span>Clear all history</span>
-          </button>
-          <div className="creator-credit">
-            Built by <span>Vaibhav Singh Saroniya</span>
+        {/* Profile Card Footer */}
+        <div className="sidebar-footer-profile">
+          <div className="profile-info">
+            <UserAvatar size={28} />
+            <div className="profile-details">
+              <span className="profile-name">Sarah Chen</span>
+              <span className="profile-badge">Pro plan</span>
+            </div>
           </div>
+          <button className="settings-btn" onClick={clearAllChats} title="Clear all history">
+            <Trash2 size={14} style={{ color: "var(--text-muted)" }} />
+          </button>
         </div>
       </aside>
 
+      {/* ── Main Chat ── */}
       <main className="chat-main">
         <header className="chat-header">
           <div className="header-left">
             {!isSidebarOpen && (
-              <button className="menu-toggle-btn" onClick={() => setIsSidebarOpen(true)} title="Open sidebar">
+              <button
+                className="menu-toggle-btn"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Open sidebar"
+              >
                 <Menu size={15} />
               </button>
             )}
             <div className="header-info">
-              <div className="header-title">Trinity</div>
+              <div className="header-title">{activeChat.title || "Welcome"}</div>
               <div className="header-subtitle">
-                <span className="status-pulse" />
-                <span>Online · Groq Cloud</span>
+                <span>
+                  {activeChat.messages ? activeChat.messages.length : 0}{" "}
+                  {activeChat.messages && activeChat.messages.length === 1
+                    ? "message"
+                    : "messages"}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="header-actions">
-            <span className="model-pill">Llama 3.3 · 70B</span>
-            <button className="header-icon-btn" onClick={toggleTheme} title={theme === "dark" ? "Light mode" : "Dark mode"}>
+            <button className="header-share-btn">
+              <Share2 size={12} />
+              <span>Share</span>
+            </button>
+            <button className="header-icon-btn" onClick={toggleTheme} title="Toggle theme">
               {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+            <button className="header-icon-btn" title="More options">
+              <MoreHorizontal size={15} />
             </button>
           </div>
         </header>
@@ -808,15 +748,26 @@ function App() {
         <div className="chat-messages">
           {activeChat.messages.length === 0 ? (
             <div className="welcome-screen">
-              <div className="large-welcome-logo-container">
-                <TrinityLogo size="large" />
+              <div className="large-welcome-logo-container" style={{ height: "auto" }}>
+                <TLogo size={60} />
+                <h2 style={{ marginTop: "1rem", color: "var(--text-primary)" }}>
+                  Meet Trinity. Your AI.
+                </h2>
+                <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                  Ask anything to start a conversation.
+                </p>
               </div>
             </div>
           ) : (
             activeChat.messages.map((msg, i) => {
               const isRevealed = revealedIds.has(msg.id);
               const isStreamingNow = streamingId === msg.id;
-              const animClass = msg.role === "user" ? "animate-msg-user" : "animate-msg-ai";
+
+              // Parse message into parts (conversational sage bubbles vs cream drafts)
+              const parts =
+                msg.role === "ai" && !msg.isError
+                  ? parseMessageParts(msg.text)
+                  : [{ type: "conversational", text: msg.text }];
 
               return (
                 <div key={msg.id || i}>
@@ -826,30 +777,51 @@ function App() {
                     </div>
                   )}
 
-                  <div className={`message-wrapper ${msg.role === "user" ? "user" : "ai"} ${!isRevealed && !isStreamingNow ? animClass : ""}`}>
+                  <div className={`message-wrapper ${msg.role === "user" ? "user" : "ai"}`}>
                     {msg.role === "ai" && (
                       <div className="message-avatar">
-                        <TrinityLogo size="small" />
+                        <TLogo size={24} />
                       </div>
                     )}
 
                     <div className="message-col">
-                      <div className="message-bubble">
-                        {msg.isError ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            <AlertTriangle size={14} />
-                            <span>{msg.text}</span>
+                      {parts.map((part, pIdx) => {
+                        const isCream = part.type === "draft";
+                        return (
+                          <div
+                            key={pIdx}
+                            className={`message-bubble ${
+                              isCream ? "cream-bubble" : "sage-bubble"
+                            }`}
+                          >
+                            {msg.isError ? (
+                              <div
+                                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+                              >
+                                <AlertTriangle size={14} />
+                                <span>{part.text}</span>
+                              </div>
+                            ) : isStreamingNow && pIdx === parts.length - 1 ? (
+                              <StreamingMessage
+                                fullText={part.text}
+                                onDone={() => handleStreamDone(msg.id)}
+                              />
+                            ) : (
+                              <FormattedMessage text={part.text} />
+                            )}
                           </div>
-                        ) : isStreamingNow ? (
-                          <StreamingMessage fullText={msg.text} onDone={() => handleStreamDone(msg.id)} />
-                        ) : (
-                          <FormattedMessage text={msg.text} />
-                        )}
-                      </div>
+                        );
+                      })}
                       {msg.time && (isRevealed || msg.role === "user") && (
                         <div className="message-time">{msg.time}</div>
                       )}
                     </div>
+
+                    {msg.role === "user" && (
+                      <div className="message-avatar-user" style={{ marginLeft: "0.55rem" }}>
+                        <UserAvatar size={24} />
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -860,6 +832,7 @@ function App() {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* ── Input Box ── */}
         <div className="chat-input-area">
           <div className="input-inner">
             {error && (
@@ -868,21 +841,17 @@ function App() {
                 <span>{error}</span>
                 <button
                   onClick={() => setError(null)}
-                  style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "inherit", display: "flex" }}
+                  style={{
+                    marginLeft: "auto",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "inherit",
+                    display: "flex",
+                  }}
                 >
                   <X size={12} />
                 </button>
-              </div>
-            )}
-
-            {activeChat.messages.length > 0 && (
-              <div className="input-pills">
-                {QUICK_PILLS.map((p, i) => (
-                  <div key={i} className="input-pill" onClick={() => handlePill(p.text)}>
-                    <span>{p.emoji}</span>
-                    <span>{p.label}</span>
-                  </div>
-                ))}
               </div>
             )}
 
@@ -892,19 +861,39 @@ function App() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Message Trinity… (Enter to send, Shift+Enter for new line)"
+                placeholder="Ask Trinity anything..."
                 className="chat-textarea"
                 disabled={isLoading}
                 rows={1}
               />
-              <div className="input-actions">
-                <button onClick={sendMessage} disabled={!message.trim() || isLoading} className="send-btn" title="Send">
-                  <Send size={14} />
-                </button>
+              <div className="input-box-bottom-row">
+                <div className="input-box-left-actions">
+                  <button className="input-action-pill-btn" type="button">
+                    <Paperclip size={12} />
+                    <span>Attach</span>
+                  </button>
+                  <button className="input-action-pill-btn" type="button">
+                    <LayoutGrid size={12} />
+                    <span>Templates</span>
+                  </button>
+                </div>
+                <div className="input-box-right-actions">
+                  <button
+                    onClick={sendMessage}
+                    disabled={!message.trim() || isLoading}
+                    className="send-btn"
+                    title="Send"
+                  >
+                    <span>Send</span>
+                    <ArrowUp size={14} style={{ strokeWidth: 2.5 }} />
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="input-hint">Trinity can make mistakes. Verify important information.</div>
+            <div className="input-hint">
+              Trinity may make mistakes. Review important information.
+            </div>
           </div>
         </div>
       </main>
