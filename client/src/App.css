@@ -1098,6 +1098,7 @@
 .chat-input-area .input-box {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   padding: 0.65rem 0.85rem;
   border-radius: 18px;
   background-color: #efeae2;
